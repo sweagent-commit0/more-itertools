@@ -35,7 +35,14 @@ def chunked(iterable, n, strict=False):
     list is yielded.
 
     """
-    pass
+    iterator = iter(iterable)
+    while True:
+        chunk = list(islice(iterator, n))
+        if not chunk:
+            return
+        if strict and len(chunk) < n:
+            raise ValueError("Iterator is not divisible by n.")
+        yield chunk
 
 def first(iterable, default=_marker):
     """Return the first item of *iterable*, or *default* if *iterable* is
@@ -54,7 +61,12 @@ def first(iterable, default=_marker):
     ``next(iter(iterable), default)``.
 
     """
-    pass
+    try:
+        return next(iter(iterable))
+    except StopIteration:
+        if default is _marker:
+            raise ValueError('Iterator is empty and no default value provided.')
+        return default
 
 def last(iterable, default=_marker):
     """Return the last item of *iterable*, or *default* if *iterable* is
@@ -68,7 +80,12 @@ def last(iterable, default=_marker):
     If *default* is not provided and there are no items in the iterable,
     raise ``ValueError``.
     """
-    pass
+    try:
+        return reduce(lambda _, x: x, iterable)
+    except TypeError:
+        if default is _marker:
+            raise ValueError('Iterator is empty and no default value provided.')
+        return default
 
 def nth_or_last(iterable, n, default=_marker):
     """Return the nth or the last item of *iterable*,
@@ -84,7 +101,7 @@ def nth_or_last(iterable, n, default=_marker):
     If *default* is not provided and there are no items in the iterable,
     raise ``ValueError``.
     """
-    pass
+    return last(islice(iterable, n + 1), default)
 
 class peekable:
     """Wrap an iterator to allow lookahead and prepending elements.
